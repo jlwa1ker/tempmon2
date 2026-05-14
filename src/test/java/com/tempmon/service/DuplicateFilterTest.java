@@ -45,3 +45,10 @@ class DuplicateFilterTest {
     private DynamoDbTable<ReadingItem> table;
 
     private DuplicateFilter duplicateFilter;
+
+    @BeforeEach
+    void setUp() {
+        duplicateFilter = new DuplicateFilter(enhancedClient, table);
+    }
+}
+

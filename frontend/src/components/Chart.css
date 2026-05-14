@@ -1,0 +1,28 @@
+.chart-container {
+  margin: 1.5rem 0;
+  padding: 1rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 0.5rem;
+  background: #fafafa;
+}
+
+.chart-container h2 {
+  margin: 0 0 1rem 0;
+  font-size: 1.1em;
+  color: #374151;
+}
+
+.no-data-message {
+  margin: 1.5rem auto;
+  padding: 1rem;
+  max-width: 400px;
+  text-align: center;
+  color: #6b7280;
+  background: #f9fafb;
+  border: 1px dashed #d1d5db;
+  border-radius: 0.375rem;
+}
+
+.no-data-message p {
+  margin: 0;
+}
