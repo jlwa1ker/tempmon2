@@ -24,6 +24,7 @@
         <aws.sdk.version>2.28.17</aws.sdk.version>
         <frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
         <node.version>v20.18.0</node.version>
+        <skip.npm>false</skip.npm>
     </properties>
 
     <dependencyManagement>
@@ -97,6 +98,7 @@
                 <configuration>
                     <workingDirectory>${project.basedir}/frontend</workingDirectory>
                     <installDirectory>${project.build.directory}/node</installDirectory>
+                    <skip>${skip.npm}</skip>
                 </configuration>
                 <executions>
                     <execution>

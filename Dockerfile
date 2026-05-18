@@ -13,7 +13,7 @@ COPY pom.xml ./
 RUN mvn dependency:go-offline
 COPY src/ ./src/
 COPY --from=frontend-build /app/frontend/dist/ ./src/main/resources/static/
-RUN mvn package -DskipTests
+RUN mvn package -DskipTests -Dskip.npm -Dskip.installnodenpm
 
 # Stage 3: Minimal runtime image
 FROM eclipse-temurin:21-jre-alpine
