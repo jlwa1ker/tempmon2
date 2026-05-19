@@ -7,7 +7,7 @@
 - **Build tool**: Maven (standard Spring Boot project layout)
 - **HTTP layer**: Spring Web MVC (REST controllers)
 - **Validation**: Jakarta Bean Validation (Hibernate Validator)
-- **Testing**: JUnit 5 + Mockito; use Spring Boot Test for integration tests
+- **Testing**: JUnit 5 + Mockito + jqwik (property-based testing); use Spring Boot Test for integration tests
 
 ## Database
 
@@ -39,23 +39,30 @@ src/
     java/         # Unit and integration tests
 pom.xml
 frontend/         # React app source (Vite project)
+infra/            # CloudFormation template
 ```
 
 ## CI/CD
 
-- **CI**: GitHub Actions
+- **CI**: GitHub Actions (`Build & Test` workflow in `.github/workflows/ci.yml`)
+- **Deploy**: Separate manual workflow (`Deploy` in `.github/workflows/deploy.yml`) triggered via `workflow_dispatch` with a build number
 - **Deployment target**: AWS ECS on Fargate
+- **Infrastructure**: CloudFormation template in `infra/cloudformation.yml`
 - Build workflow should:
   1. Build the React frontend (`npm run build` in `frontend/`)
   2. Copy the frontend `dist/` output to `src/main/resources/static/`
   3. Run `mvn verify` to compile, test, and package the Spring Boot app
-  4. Build a Docker image and push it to Amazon ECR
-  5. Deploy the new image to an ECS Fargate service by updating the ECS task definition
-- Trigger the workflow on push to `main` and on pull requests targeting `main` (deploy only on push to `main`)
+  4. Build a Docker image and push it to Amazon ECR (on push to `main` only)
+- Deploy workflow:
+  1. Accepts a build number as input
+  2. Updates the ECS task definition to use the image tagged with that build number
+  3. Forces a new ECS deployment and waits for service stability
+- Trigger the build workflow on push to `main` and on pull requests targeting `main`
 - Use the latest Ubuntu runner (`ubuntu-latest`)
 - The Spring Boot app must be containerized with a `Dockerfile` at the project root
 - The ECS task role must have IAM permissions to access DynamoDB
-- Configuration (e.g. `DATABASE_URL`, `PORT`) is passed to the container via ECS task definition environment variables or AWS Secrets Manager
+- GitHub Actions authenticates to AWS via OIDC (no static access keys)
+- Configuration (e.g. `DATABASE_URL`, `PORT`) is passed to the container via ECS task definition environment variables
 
 ## General Conventions
 
