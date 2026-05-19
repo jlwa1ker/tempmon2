@@ -29,15 +29,6 @@ jobs:
         id: login-ecr
         uses: aws-actions/amazon-ecr-login@v2
 
-      - name: Verify image exists in ECR
-        env:
-          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          ECR_REPOSITORY: ${{ secrets.ECR_REPOSITORY }}
-          BUILD_NUMBER: ${{ inputs.build-number }}
-        run: |
-          echo "Checking for image ${ECR_REGISTRY}/${ECR_REPOSITORY}:${BUILD_NUMBER}"
-          aws ecr describe-images --repository-name ${ECR_REPOSITORY} --image-ids imageTag=${BUILD_NUMBER}
-
       - name: Update ECS task definition with new image
         id: task-def
         env:
