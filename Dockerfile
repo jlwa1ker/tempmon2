@@ -20,6 +20,8 @@ FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 COPY --from=backend-build /app/target/*.jar app.jar
 
+ARG BUILD_NUMBER=0
+ENV BUILD_NUMBER=${BUILD_NUMBER}
 ENV SERVER_PORT=8080
 ENV DYNAMODB_TABLE_NAME=temperature_readings
 ENV AWS_REGION=us-east-1

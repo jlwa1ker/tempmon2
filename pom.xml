@@ -25,6 +25,8 @@
         <frontend-maven-plugin.version>1.15.1</frontend-maven-plugin.version>
         <node.version>v20.18.0</node.version>
         <skip.npm>false</skip.npm>
+        <version.major>0</version.major>
+        <version.minor>1</version.minor>
     </properties>
 
     <dependencyManagement>

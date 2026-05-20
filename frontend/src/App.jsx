@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import QueryForm from './components/QueryForm'
 import Chart from './components/Chart'
+import { VERSION } from './version'
 import './App.css'
 
 function App() {
@@ -53,6 +54,7 @@ function App() {
   return (
     <div className="App">
       <h1>Temperature Monitor</h1>
+      <p className="version">v{VERSION.toString()}</p>
       <QueryForm onSubmit={handleSubmit} disabled={loading} />
 
       {loading && (

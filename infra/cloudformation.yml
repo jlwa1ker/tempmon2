@@ -374,6 +374,8 @@ Resources:
               Value: !Ref AWS::Region
             - Name: DATABASE_URL
               Value: !Sub https://dynamodb.${AWS::Region}.amazonaws.com
+            - Name: BUILD_NUMBER
+              Value: '0'
           LogConfiguration:
             LogDriver: awslogs
             Options:

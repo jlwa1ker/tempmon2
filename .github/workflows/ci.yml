@@ -41,7 +41,11 @@ jobs:
         working-directory: frontend
 
       - name: Build frontend
-        run: npm run build
+        env:
+          BUILD_NUMBER: ${{ steps.build-number.outputs.value }}
+        run: |
+          sed -i "s/build: 0/build: ${BUILD_NUMBER}/" src/version.js
+          npm run build
         working-directory: frontend
 
       - name: Copy frontend to static resources
@@ -53,7 +57,7 @@ jobs:
         run: mvn verify -B
 
       - name: Build Docker image
-        run: docker build -t tempmon:${{ steps.build-number.outputs.value }} .
+        run: docker build --build-arg BUILD_NUMBER=${{ steps.build-number.outputs.value }} -t tempmon:${{ steps.build-number.outputs.value }} .
 
       - name: Save Docker image as artifact
         run: docker save tempmon:${{ steps.build-number.outputs.value }} | gzip > tempmon-${{ steps.build-number.outputs.value }}.tar.gz
