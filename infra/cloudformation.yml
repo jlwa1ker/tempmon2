@@ -33,6 +33,13 @@ Parameters:
     Type: String
     Default: tempmon2
     Description: GitHub repository name
+  HostedZoneId:
+    Type: String
+    Description: Route 53 Hosted Zone ID for walkerweb.us
+  DomainName:
+    Type: String
+    Default: tempmon.walkerweb.us
+    Description: DNS name for the application
 
 Resources:
 
@@ -406,14 +413,33 @@ Resources:
           ContainerPort: !Ref ContainerPort
           TargetGroupArn: !Ref ALBTargetGroup
 
+  # ============================================================
+  # DNS (Route 53)
+  # ============================================================
+
+  DNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneId: !Ref HostedZoneId
+      Name: !Ref DomainName
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt ALB.DNSName
+        HostedZoneId: !GetAtt ALB.CanonicalHostedZoneID
+        EvaluateTargetHealth: true
+
 # ============================================================
 # Outputs
 # ============================================================
 
 Outputs:
   ALBURL:
-    Description: Application URL
+    Description: Application URL (ALB direct)
     Value: !Sub http://${ALB.DNSName}
+
+  AppURL:
+    Description: Application URL (custom domain)
+    Value: !Sub http://${DomainName}
 
   ECRRepositoryUri:
     Description: ECR repository URI
