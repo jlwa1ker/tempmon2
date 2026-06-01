@@ -24,7 +24,7 @@ Parameters:
     AllowedValues: ['512', '1024', '2048', '4096', '8192']
   DynamoDBTableName:
     Type: String
-    Default: temperature_readings
+    Default: hygrometer_readings
   GitHubOrg:
     Type: String
     Default: jlwa1ker
