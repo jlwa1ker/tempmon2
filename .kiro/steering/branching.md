@@ -34,8 +34,10 @@ The `main` branch is protected with the following rules:
 Releases use a dotted triple: `major.minor.build`
 
 - **Major** — Breaking changes or significant milestones
-- **Minor** — New features, backward-compatible
-- **Build** — Incremental, corresponds to the GitHub Actions `run_number` from the Build & Test workflow
+- **Minor** — New features, backward-compatible. A "point release" bumps this number.
+- **Build** — The GitHub Actions `run_number` from the Build & Test CI workflow at the time of release. This is NOT manually assigned — it comes from the CI run that built the release artifact.
+
+Example: if the CI workflow `run_number` is 17 when releasing a new minor version, the tag is `0.2.17`.
 
 ## Merge Direction Summary
 
