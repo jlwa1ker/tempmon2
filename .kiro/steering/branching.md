@@ -15,9 +15,19 @@ We use a simplified GitFlow model with an integration branch for release candida
 
 ## Release Process
 
-1. When `develop` is ready for release, merge `develop` into `main`
+1. When `develop` is ready for release, merge `develop` into `main` via pull request
 2. Tag the merge commit on `main` with the release number (e.g., `1.2.3`)
 3. Deploy from the tagged commit
+
+## Branch Protection
+
+The `main` branch is protected with the following rules:
+
+- **Pull request required** — No direct pushes to `main`; all changes must go through a PR
+- **Approval required** — At least 1 approving review before merge
+- **Stale reviews dismissed** — Pushing new commits invalidates previous approvals
+- **Status checks required** — CI jobs must pass before merge (project-specific check names)
+- **Admin bypass** — The repository owner can override status check requirements when necessary
 
 ## Release Numbering
 
