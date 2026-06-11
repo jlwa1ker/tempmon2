@@ -13,6 +13,10 @@ export default defineConfig({
       '/ingest': {
         target: 'http://localhost:8080',
         changeOrigin: true
+      },
+      '/locations': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
       }
     }
   },

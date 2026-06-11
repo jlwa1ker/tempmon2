@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import './QueryForm.css'
 
 /**
@@ -21,13 +21,50 @@ function isValidRfc3339(value) {
   return !isNaN(date.getTime())
 }
 
+/**
+ * Formats a Date to a datetime-local input value (YYYY-MM-DDTHH:mm).
+ */
+function toDatetimeLocal(date) {
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  const hours = String(date.getHours()).padStart(2, '0')
+  const minutes = String(date.getMinutes()).padStart(2, '0')
+  return `${year}-${month}-${day}T${hours}:${minutes}`
+}
+
+const METRIC_OPTIONS = [
+  { value: 'temperature_f', label: 'Temperature (°F)' },
+  { value: 'humidity_pct', label: 'Humidity (%)' },
+]
+
 function QueryForm({ onSubmit, disabled = false }) {
-  const [start, setStart] = useState('')
-  const [end, setEnd] = useState('')
+  const now = new Date()
+  const twentyFourHoursAgo = new Date(now.getTime() - 24 * 60 * 60 * 1000)
+
+  const [start, setStart] = useState(toDatetimeLocal(twentyFourHoursAgo))
+  const [end, setEnd] = useState(toDatetimeLocal(now))
   const [locations, setLocations] = useState([])
-  const [locationInput, setLocationInput] = useState('')
-  const [metric, setMetric] = useState('temperature_f')
+  const [locationSelect, setLocationSelect] = useState('')
+  const [availableLocations, setAvailableLocations] = useState([])
+  const [metrics, setMetrics] = useState(['temperature_f'])
+  const [metricSelect, setMetricSelect] = useState('')
   const [errors, setErrors] = useState({})
+
+  // Fetch available locations on mount
+  useEffect(() => {
+    fetch('/locations')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.locations && data.locations.length > 0) {
+          setAvailableLocations(data.locations)
+          setLocationSelect(data.locations[0])
+        }
+      })
+      .catch(() => {
+        // Silently fail — user can still type locations if needed
+      })
+  }, [])
 
   function validate() {
     const newErrors = {}
@@ -58,24 +95,21 @@ function QueryForm({ onSubmit, disabled = false }) {
     // Validate locations
     if (locations.length === 0) {
       newErrors.locations = 'At least one location is required.'
-    } else {
-      for (let i = 0; i < locations.length; i++) {
-        if (locations[i].length < 1 || locations[i].length > 255) {
-          newErrors.locations = 'Each location must be between 1 and 255 characters.'
-          break
-        }
-      }
+    }
+
+    // Validate metrics
+    if (metrics.length === 0) {
+      newErrors.metrics = 'At least one metric is required.'
     }
 
     return newErrors
   }
 
   function handleAddLocation() {
-    const trimmed = locationInput.trim()
-    if (!trimmed) return
-    if (trimmed.length > 255) return
-    setLocations([...locations, trimmed])
-    setLocationInput('')
+    const selected = locationSelect.trim()
+    if (!selected) return
+    if (locations.includes(selected)) return
+    setLocations([...locations, selected])
     // Clear locations error when a location is added
     if (errors.locations) {
       setErrors((prev) => {
@@ -90,12 +124,37 @@ function QueryForm({ onSubmit, disabled = false }) {
     setLocations(locations.filter((_, i) => i !== index))
   }
 
-  function handleLocationKeyDown(e) {
-    if (e.key === 'Enter') {
-      e.preventDefault()
-      handleAddLocation()
+  function handleAddMetric() {
+    const selected = metricSelect.trim()
+    if (!selected) return
+    if (metrics.includes(selected)) return
+    setMetrics([...metrics, selected])
+    if (errors.metrics) {
+      setErrors((prev) => {
+        const next = { ...prev }
+        delete next.metrics
+        return next
+      })
     }
   }
+
+  function handleRemoveMetric(index) {
+    setMetrics(metrics.filter((_, i) => i !== index))
+  }
+
+  // Determine which metric options are still available to add
+  const availableMetricOptions = METRIC_OPTIONS.filter(
+    (opt) => !metrics.includes(opt.value)
+  )
+
+  // Set default metricSelect to first available option
+  useEffect(() => {
+    if (availableMetricOptions.length > 0 && !metricSelect) {
+      setMetricSelect(availableMetricOptions[0].value)
+    } else if (availableMetricOptions.length > 0 && !availableMetricOptions.find(o => o.value === metricSelect)) {
+      setMetricSelect(availableMetricOptions[0].value)
+    }
+  }, [metrics])
 
   function handleSubmit(e) {
     e.preventDefault()
@@ -113,7 +172,7 @@ function QueryForm({ onSubmit, disabled = false }) {
       start: startRfc,
       end: endRfc,
       locations,
-      metric
+      metrics
     })
   }
 
@@ -156,23 +215,28 @@ function QueryForm({ onSubmit, disabled = false }) {
       </div>
 
       <div className="form-group locations-group">
-        <label htmlFor="query-location-input">Locations</label>
+        <label htmlFor="query-location-select">Locations</label>
         <div className="location-add-row">
-          <input
-            id="query-location-input"
-            type="text"
-            value={locationInput}
-            onChange={(e) => setLocationInput(e.target.value)}
-            onKeyDown={handleLocationKeyDown}
-            placeholder="Enter location name"
-            maxLength={255}
-            disabled={disabled}
+          <select
+            id="query-location-select"
+            value={locationSelect}
+            onChange={(e) => setLocationSelect(e.target.value)}
+            disabled={disabled || availableLocations.length === 0}
             aria-describedby={errors.locations ? 'query-locations-error' : undefined}
-          />
+          >
+            {availableLocations.length === 0 && (
+              <option value="">Loading...</option>
+            )}
+            {availableLocations.map((loc) => (
+              <option key={loc} value={loc}>
+                {loc}
+              </option>
+            ))}
+          </select>
           <button
             type="button"
             onClick={handleAddLocation}
-            disabled={disabled || !locationInput.trim()}
+            disabled={disabled || !locationSelect || locations.includes(locationSelect)}
             aria-label="Add location"
           >
             Add
@@ -202,17 +266,59 @@ function QueryForm({ onSubmit, disabled = false }) {
         )}
       </div>
 
-      <div className="form-group">
-        <label htmlFor="query-metric">Metric</label>
-        <select
-          id="query-metric"
-          value={metric}
-          onChange={(e) => setMetric(e.target.value)}
-          disabled={disabled}
-        >
-          <option value="temperature_f">Temperature (°F)</option>
-          <option value="humidity_pct">Humidity (%)</option>
-        </select>
+      <div className="form-group metrics-group">
+        <label htmlFor="query-metric-select">Metrics</label>
+        <div className="location-add-row">
+          <select
+            id="query-metric-select"
+            value={metricSelect}
+            onChange={(e) => setMetricSelect(e.target.value)}
+            disabled={disabled || availableMetricOptions.length === 0}
+            aria-describedby={errors.metrics ? 'query-metrics-error' : undefined}
+          >
+            {availableMetricOptions.length === 0 && (
+              <option value="">All metrics selected</option>
+            )}
+            {availableMetricOptions.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <button
+            type="button"
+            onClick={handleAddMetric}
+            disabled={disabled || availableMetricOptions.length === 0}
+            aria-label="Add metric"
+          >
+            Add
+          </button>
+        </div>
+        {metrics.length > 0 && (
+          <ul className="location-list" aria-label="Selected metrics">
+            {metrics.map((m, index) => {
+              const opt = METRIC_OPTIONS.find((o) => o.value === m)
+              return (
+                <li key={index} className="location-item">
+                  <span>{opt ? opt.label : m}</span>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveMetric(index)}
+                    disabled={disabled}
+                    aria-label={`Remove ${opt ? opt.label : m}`}
+                  >
+                    ×
+                  </button>
+                </li>
+              )
+            })}
+          </ul>
+        )}
+        {errors.metrics && (
+          <div id="query-metrics-error" className="validation-error" role="alert">
+            {errors.metrics}
+          </div>
+        )}
       </div>
 
       <button

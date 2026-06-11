@@ -11,7 +11,8 @@ import {
 } from 'recharts'
 import './Chart.css'
 
-const COLORS = ['#2563eb', '#dc2626', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#4f46e5', '#be185d']
+const TEMP_COLORS = ['#2563eb', '#dc2626', '#16a34a', '#9333ea', '#ea580c', '#0891b2', '#4f46e5', '#be185d']
+const HUMIDITY_COLORS = ['#06b6d4', '#f59e0b', '#84cc16', '#ec4899', '#8b5cf6', '#14b8a6', '#f97316', '#6366f1']
 
 function formatTimestamp(isoString) {
   const date = new Date(isoString)
@@ -27,7 +28,11 @@ function getMetricLabel(metric) {
   return 'Humidity (%)'
 }
 
-export default function Chart({ readings, metric }) {
+export default function Chart({ readings, metrics }) {
+  const isDual = metrics.length === 2
+  const hasTemp = metrics.includes('temperature_f')
+  const hasHumidity = metrics.includes('humidity_pct')
+
   const { chartData, locations } = useMemo(() => {
     if (!readings || readings.length === 0) {
       return { chartData: [], locations: [] }
@@ -38,7 +43,7 @@ export default function Chart({ readings, metric }) {
     readings.forEach((r) => locationSet.add(r.location))
     const locs = Array.from(locationSet).sort()
 
-    // Group readings by timestamp, with each location as a separate field
+    // Group readings by timestamp, with each location+metric as a separate field
     const timeMap = new Map()
     readings.forEach((r) => {
       const key = r.timestamp
@@ -46,7 +51,12 @@ export default function Chart({ readings, metric }) {
         timeMap.set(key, { timestamp: key })
       }
       const entry = timeMap.get(key)
-      entry[r.location] = r[metric]
+      if (hasTemp) {
+        entry[`${r.location}_temp`] = r.temperature_f
+      }
+      if (hasHumidity) {
+        entry[`${r.location}_humidity`] = r.humidity_pct
+      }
     })
 
     // Sort by timestamp
@@ -55,7 +65,7 @@ export default function Chart({ readings, metric }) {
     )
 
     return { chartData: data, locations: locs }
-  }, [readings, metric])
+  }, [readings, metrics])
 
   if (!readings || readings.length === 0) {
     return (
@@ -65,9 +75,13 @@ export default function Chart({ readings, metric }) {
     )
   }
 
+  const title = isDual
+    ? 'Temperature (°F) & Humidity (%)'
+    : getMetricLabel(metrics[0])
+
   return (
     <div className="chart-container" aria-label="Readings line chart">
-      <h2>{getMetricLabel(metric)}</h2>
+      <h2>{title}</h2>
       <ResponsiveContainer width="100%" height={400}>
         <LineChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
           <CartesianGrid strokeDasharray="3 3" />
@@ -76,25 +90,56 @@ export default function Chart({ readings, metric }) {
             tickFormatter={formatTimestamp}
             label={{ value: 'Time', position: 'insideBottomRight', offset: -5 }}
           />
-          <YAxis
-            label={{ value: getMetricLabel(metric), angle: -90, position: 'insideLeft' }}
-          />
+          {isDual ? (
+            <>
+              <YAxis
+                yAxisId="left"
+                label={{ value: 'Temperature (°F)', angle: -90, position: 'insideLeft' }}
+              />
+              <YAxis
+                yAxisId="right"
+                orientation="right"
+                label={{ value: 'Humidity (%)', angle: 90, position: 'insideRight' }}
+              />
+            </>
+          ) : (
+            <YAxis
+              yAxisId="left"
+              label={{ value: getMetricLabel(metrics[0]), angle: -90, position: 'insideLeft' }}
+            />
+          )}
           <Tooltip
             labelFormatter={formatTimestamp}
             formatter={(value, name) => [value, name]}
           />
           <Legend />
-          {locations.map((loc, idx) => (
-            <Line
-              key={loc}
-              type="monotone"
-              dataKey={loc}
-              name={loc}
-              stroke={COLORS[idx % COLORS.length]}
-              dot={false}
-              connectNulls
-            />
-          ))}
+          {hasTemp &&
+            locations.map((loc, idx) => (
+              <Line
+                key={`${loc}_temp`}
+                type="monotone"
+                dataKey={`${loc}_temp`}
+                name={isDual ? `${loc} (°F)` : loc}
+                stroke={TEMP_COLORS[idx % TEMP_COLORS.length]}
+                yAxisId="left"
+                dot={false}
+                connectNulls
+              />
+            ))}
+          {hasHumidity &&
+            locations.map((loc, idx) => (
+              <Line
+                key={`${loc}_humidity`}
+                type="monotone"
+                dataKey={`${loc}_humidity`}
+                name={isDual ? `${loc} (%)` : loc}
+                stroke={isDual ? HUMIDITY_COLORS[idx % HUMIDITY_COLORS.length] : TEMP_COLORS[idx % TEMP_COLORS.length]}
+                yAxisId={isDual ? 'right' : 'left'}
+                dot={false}
+                connectNulls
+                strokeDasharray={isDual ? '5 5' : undefined}
+              />
+            ))}
         </LineChart>
       </ResponsiveContainer>
     </div>
