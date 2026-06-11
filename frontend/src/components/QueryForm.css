@@ -131,3 +131,38 @@
   background: #aaa;
   cursor: not-allowed;
 }
+
+.metrics-group .location-list {
+  list-style: none;
+  padding: 0;
+  margin: 0.5rem 0;
+}
+
+.metrics-group .location-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.25rem;
+  padding: 0.25rem 0.5rem;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.metrics-group .location-item span {
+  flex: 1;
+  word-break: break-all;
+}
+
+.metrics-group .location-item button {
+  background: none;
+  border: none;
+  color: #d32f2f;
+  cursor: pointer;
+  font-size: 1.1rem;
+  padding: 0 0.25rem;
+}
+
+.metrics-group .location-item button:hover {
+  color: #b71c1c;
+}

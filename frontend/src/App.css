@@ -66,3 +66,65 @@ h1 {
   margin: 0;
 }
 
+
+.view-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin: 1rem 0;
+}
+
+.toggle-button {
+  padding: 0.5rem 1.25rem;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background: #fff;
+  color: #333;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.toggle-button:hover {
+  background: #f0f0f0;
+}
+
+.toggle-button.active {
+  background: #2563eb;
+  color: #fff;
+  border-color: #2563eb;
+}
+
+.table-container {
+  margin: 1.5rem auto;
+  max-width: 900px;
+  overflow-x: auto;
+}
+
+.readings-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  text-align: left;
+}
+
+.readings-table th,
+.readings-table td {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #e0e0e0;
+}
+
+.readings-table th {
+  background: #f5f5f5;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+}
+
+.readings-table tbody tr:nth-child(even) {
+  background: #fafafa;
+}
+
+.readings-table tbody tr:hover {
+  background: #e8f0fe;
+}

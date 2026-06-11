@@ -27,7 +27,17 @@ The `main` branch is protected with the following rules:
 - **Approval required** — At least 1 approving review before merge
 - **Stale reviews dismissed** — Pushing new commits invalidates previous approvals
 - **Status checks required** — CI jobs must pass before merge (project-specific check names)
-- **Admin bypass** — The repository owner can override status check requirements when necessary
+- **Admin bypass** — Reserved for the repository owner only. Kiro must never use `--admin` to bypass branch protection rules or force-merge PRs.
+
+## Merging to Main
+
+When merging `develop` to `main` for a release:
+
+1. Create a PR from `develop` to `main`
+2. **Do NOT use admin bypass to merge** — the PR must be reviewed and approved by the repository owner
+3. Wait for CI status checks to pass
+4. After approval, the owner merges the PR
+5. Tag the merge commit on `main` with the release version
 
 ## Release Numbering
 
