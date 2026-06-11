@@ -9,13 +9,14 @@ function App() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
   const [count, setCount] = useState(0)
-  const [metric, setMetric] = useState('temperature_f')
+  const [metrics, setMetrics] = useState(['temperature_f'])
   const [hasQueried, setHasQueried] = useState(false)
+  const [viewMode, setViewMode] = useState('chart')
 
-  async function handleSubmit({ start, end, locations, metric: selectedMetric }) {
+  async function handleSubmit({ start, end, locations, metrics: selectedMetrics }) {
     setLoading(true)
     setError(null)
-    setMetric(selectedMetric)
+    setMetrics(selectedMetrics)
     setHasQueried(true)
 
     try {
@@ -51,6 +52,11 @@ function App() {
     }
   }
 
+  function formatTimestamp(isoString) {
+    const date = new Date(isoString)
+    return date.toLocaleString()
+  }
+
   return (
     <div className="App">
       <h1>Temperature Monitor</h1>
@@ -76,12 +82,58 @@ function App() {
         </div>
       )}
 
-      {!loading && !error && readings.length > 0 && (
-        <Chart readings={readings} metric={metric} />
+      {!loading && !error && hasQueried && (
+        <div className="view-toggle">
+          <button
+            className={`toggle-button ${viewMode === 'chart' ? 'active' : ''}`}
+            onClick={() => setViewMode('chart')}
+          >
+            Show Chart
+          </button>
+          <button
+            className={`toggle-button ${viewMode === 'table' ? 'active' : ''}`}
+            onClick={() => setViewMode('table')}
+          >
+            Show Table
+          </button>
+        </div>
       )}
 
-      {!loading && !error && hasQueried && readings.length === 0 && (
-        <Chart readings={[]} metric={metric} />
+      {!loading && !error && hasQueried && viewMode === 'chart' && readings.length > 0 && (
+        <Chart readings={readings} metrics={metrics} />
+      )}
+
+      {!loading && !error && hasQueried && viewMode === 'chart' && readings.length === 0 && (
+        <Chart readings={[]} metrics={metrics} />
+      )}
+
+      {!loading && !error && hasQueried && viewMode === 'table' && (
+        <div className="table-container">
+          {readings.length === 0 ? (
+            <p>No data found</p>
+          ) : (
+            <table className="readings-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>Location</th>
+                  <th>Temperature (°F)</th>
+                  <th>Humidity (%)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {readings.map((r, idx) => (
+                  <tr key={idx}>
+                    <td>{formatTimestamp(r.timestamp)}</td>
+                    <td>{r.location}</td>
+                    <td>{r.temperature_f}</td>
+                    <td>{r.humidity_pct}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
       )}
     </div>
   )
