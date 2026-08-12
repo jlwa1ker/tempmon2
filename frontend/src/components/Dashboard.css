@@ -1,0 +1,50 @@
+.dashboard {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.dashboard-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.dashboard-card {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  border-radius: 0.5rem;
+  padding: 1.25rem 1.5rem;
+  text-align: left;
+}
+
+.card-location {
+  font-size: 1.2em;
+  margin: 0 0 0.75rem 0;
+  color: #333;
+}
+
+.card-values {
+  display: flex;
+  gap: 2rem;
+  align-items: baseline;
+  margin-bottom: 0.5rem;
+}
+
+.card-temperature {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.card-humidity {
+  font-size: 2rem;
+  font-weight: 600;
+  color: #dc2626;
+}
+
+.card-timestamp {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #333;
+}
