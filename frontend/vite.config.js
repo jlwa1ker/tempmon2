@@ -17,6 +17,10 @@ export default defineConfig({
       '/locations': {
         target: 'http://localhost:8080',
         changeOrigin: true
+      },
+      '/latest': {
+        target: 'http://localhost:8080',
+        changeOrigin: true
       }
     }
   },
