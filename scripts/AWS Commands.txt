@@ -1,0 +1,11 @@
+Temporarily disable:
+aws ecs update-service \
+  --cluster <your-cluster-name> \
+  --service <your-service-name> \
+  --desired-count 0
+
+Reenable:
+aws ecs update-service \
+  --cluster <your-cluster-name> \
+  --service <your-service-name> \
+  --desired-count <original-count>
