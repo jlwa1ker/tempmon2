@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { LineChart, Line, YAxis, ResponsiveContainer } from 'recharts'
 import './Dashboard.css'
 
 function formatTimestamp(isoString) {
@@ -15,6 +16,7 @@ function formatTimestamp(isoString) {
 
 function Dashboard() {
   const [readings, setReadings] = useState([])
+  const [history, setHistory] = useState({})
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
 
@@ -35,11 +37,43 @@ function Dashboard() {
     }
   }
 
+  async function fetchHistory(locations) {
+    const now = new Date()
+    const oneHourAgo = new Date(now.getTime() - 60 * 60 * 1000)
+    const params = new URLSearchParams()
+    params.append('start', oneHourAgo.toISOString())
+    params.append('end', now.toISOString())
+    locations.forEach((loc) => params.append('locations', loc))
+
+    try {
+      const response = await fetch(`/readings?${params.toString()}`)
+      if (response.ok) {
+        const data = await response.json()
+        // Group by location
+        const grouped = {}
+        for (const r of data.readings) {
+          if (!grouped[r.location]) grouped[r.location] = []
+          grouped[r.location].push(r)
+        }
+        setHistory(grouped)
+      }
+    } catch {
+      // Silently fail — sparklines are a nice-to-have
+    }
+  }
+
   useEffect(() => {
     fetchLatest()
     const interval = setInterval(fetchLatest, 60000)
     return () => clearInterval(interval)
   }, [])
+
+  useEffect(() => {
+    if (readings.length > 0) {
+      const locations = readings.map((r) => r.location)
+      fetchHistory(locations)
+    }
+  }, [readings])
 
   if (loading) {
     return (
@@ -73,16 +107,48 @@ function Dashboard() {
   return (
     <div className="dashboard">
       <div className="dashboard-cards">
-        {readings.map((reading) => (
-          <div key={reading.location} className="dashboard-card">
-            <h2 className="card-location">{reading.location}</h2>
-            <div className="card-values">
-              <span className="card-temperature">{reading.temperature_f}°F</span>
-              <span className="card-humidity">{reading.humidity_pct}%</span>
+        {readings.map((reading) => {
+          const locationHistory = history[reading.location] || []
+          return (
+            <div key={reading.location} className="dashboard-card">
+              <h2 className="card-location">{reading.location}</h2>
+              <div className="card-body">
+                <div className="card-info">
+                  <div className="card-values">
+                    <span className="card-temperature">{reading.temperature_f}°F</span>
+                    <span className="card-humidity">
+                      {Number(reading.humidity_pct).toFixed(1)}%
+                    </span>
+                  </div>
+                  <p className="card-timestamp">{formatTimestamp(reading.timestamp)}</p>
+                </div>
+                {locationHistory.length > 1 && (
+                  <div className="card-chart">
+                    <ResponsiveContainer width="100%" height={60}>
+                      <LineChart data={locationHistory}>
+                        <YAxis domain={['auto', 'auto']} hide />
+                        <Line
+                          type="monotone"
+                          dataKey="temperature_f"
+                          stroke="#2563eb"
+                          dot={false}
+                          strokeWidth={1.5}
+                        />
+                        <Line
+                          type="monotone"
+                          dataKey="humidity_pct"
+                          stroke="#dc2626"
+                          dot={false}
+                          strokeWidth={1.5}
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                )}
+              </div>
             </div>
-            <p className="card-timestamp">{formatTimestamp(reading.timestamp)}</p>
-          </div>
-        ))}
+          )
+        })}
       </div>
     </div>
   )
