@@ -24,6 +24,21 @@
   color: #333;
 }
 
+.card-body {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.card-info {
+  flex: 0 0 auto;
+}
+
+.card-chart {
+  flex: 1;
+  min-width: 0;
+}
+
 .card-values {
   display: flex;
   gap: 2rem;
