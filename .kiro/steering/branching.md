@@ -24,8 +24,6 @@ We use a simplified GitFlow model with an integration branch for release candida
 The `main` branch is protected with the following rules:
 
 - **Pull request required** — No direct pushes to `main`; all changes must go through a PR
-- **Approval required** — At least 1 approving review before merge
-- **Stale reviews dismissed** — Pushing new commits invalidates previous approvals
 - **Status checks required** — CI jobs must pass before merge (project-specific check names)
 - **Admin bypass** — Reserved for the repository owner only. Kiro must never use `--admin` to bypass branch protection rules or force-merge PRs.
 
