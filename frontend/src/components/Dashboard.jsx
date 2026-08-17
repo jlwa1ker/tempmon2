@@ -145,7 +145,7 @@ function Dashboard() {
                             const padding = range * 0.5 / 2
                             return [dataMin - padding, dataMax + padding]
                           }}
-                          tickFormatter={(v) => v.toFixed(0) + '%'}
+                          tickFormatter={(v) => v.toFixed(1) + '%'}
                           width={30}
                         />
                         <YAxis
@@ -158,7 +158,7 @@ function Dashboard() {
                             const padding = range * 0.5 / 2
                             return [dataMin - padding, dataMax + padding]
                           }}
-                          tickFormatter={(v) => v.toFixed(0) + '°'}
+                          tickFormatter={(v) => v.toFixed(1) + '°'}
                           width={30}
                         />
                         <Line
