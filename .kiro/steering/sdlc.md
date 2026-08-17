@@ -18,4 +18,4 @@ There are two modes of development. The current mode determines how bugs are han
 - Issues are prioritized and addressed in subsequent fix branches
 - Appropriate when the system is deployed and reliability matters
 
-## Current Mode: RAD
+## Current Mode: Stability
