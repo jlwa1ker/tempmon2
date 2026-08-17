@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { LineChart, Line, YAxis, ResponsiveContainer } from 'recharts'
+import { LineChart, Line, XAxis, YAxis, ResponsiveContainer } from 'recharts'
 import './Dashboard.css'
 
 function formatTimestamp(isoString) {
@@ -124,8 +124,17 @@ function Dashboard() {
                 </div>
                 {locationHistory.length > 1 && (
                   <div className="card-chart">
-                    <ResponsiveContainer width="100%" height={60}>
-                      <LineChart data={locationHistory}>
+                    <ResponsiveContainer width="100%" height={80}>
+                      <LineChart data={locationHistory} margin={{ top: 5, right: 5, bottom: 0, left: 5 }}>
+                        <XAxis
+                          dataKey="timestamp"
+                          tickFormatter={(ts) => {
+                            const d = new Date(ts)
+                            return d.getHours().toString().padStart(2, '0') + ':' + d.getMinutes().toString().padStart(2, '0')
+                          }}
+                          tick={{ fontSize: 10 }}
+                          interval="preserveStartEnd"
+                        />
                         <YAxis domain={['auto', 'auto']} hide />
                         <Line
                           type="monotone"
