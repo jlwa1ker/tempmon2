@@ -125,7 +125,7 @@ function Dashboard() {
                 {locationHistory.length > 1 && (
                   <div className="card-chart">
                     <ResponsiveContainer width="100%" height={80}>
-                      <LineChart data={locationHistory} margin={{ top: 5, right: 5, bottom: 0, left: 5 }}>
+                      <LineChart data={locationHistory} margin={{ top: 5, right: 35, bottom: 0, left: 35 }}>
                         <XAxis
                           dataKey="timestamp"
                           tickFormatter={(ts) => {
@@ -135,8 +135,34 @@ function Dashboard() {
                           tick={{ fontSize: 10 }}
                           interval="preserveStartEnd"
                         />
-                        <YAxis domain={['auto', 'auto']} hide />
+                        <YAxis
+                          yAxisId="left"
+                          orientation="left"
+                          tick={{ fontSize: 9 }}
+                          tickCount={3}
+                          domain={([dataMin, dataMax]) => {
+                            const range = dataMax - dataMin || 1
+                            const padding = range * 0.5 / 2
+                            return [dataMin - padding, dataMax + padding]
+                          }}
+                          tickFormatter={(v) => v.toFixed(0) + '%'}
+                          width={30}
+                        />
+                        <YAxis
+                          yAxisId="right"
+                          orientation="right"
+                          tick={{ fontSize: 9 }}
+                          tickCount={3}
+                          domain={([dataMin, dataMax]) => {
+                            const range = dataMax - dataMin || 1
+                            const padding = range * 0.5 / 2
+                            return [dataMin - padding, dataMax + padding]
+                          }}
+                          tickFormatter={(v) => v.toFixed(0) + '°'}
+                          width={30}
+                        />
                         <Line
+                          yAxisId="right"
                           type="monotone"
                           dataKey="temperature_f"
                           stroke="#2563eb"
@@ -144,6 +170,7 @@ function Dashboard() {
                           strokeWidth={1.5}
                         />
                         <Line
+                          yAxisId="left"
                           type="monotone"
                           dataKey="humidity_pct"
                           stroke="#dc2626"
