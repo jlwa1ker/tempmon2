@@ -619,3 +619,14 @@ Each property test runs a minimum of 100 iterations. Tests are tagged with the f
 - Unit tests with Vitest + React Testing Library for form validation logic (RFC 3339 format check, empty location list check).
 - Snapshot tests for chart rendering with mock data.
 - Manual browser testing for visual correctness of Recharts line chart.
+
+---
+
+## Device Client Expectations
+
+The only client of `POST /ingest` is the Adafruit Feather M0 firmware in the `wifi-config-app` repository. Its behavior is specified there, in `.kiro/specs/hygrometer-reporting/` (requirements, design and tasks). This section records only what the server can rely on.
+
+- **Cadence:** one report every 15 minutes, aligned to wall-clock boundaries since midnight UTC (:00, :15, :30, :45), each carrying every reading the device still holds.
+- **Retries and duplicates:** the device keeps readings until the server accepts them, so after an outage a single request can carry up to 96 readings (24 hours), and a retry can repeat readings the server already stored. The duplicate handling in `DuplicateFilter` is what makes this safe, and `inserted_count + skipped_count` is how the device knows how many to drop.
+- **Timestamps:** UTC, ISO 8601 with a `+00:00` offset, from the device's NTP-synchronized clock. During an NTP resync failure the device keeps using its last good clock offset and keeps reporting, so timestamps continue to arrive on schedule (drift is small over the retry period).
+- **Device fields:** `timestamp`, `temperature_f`, `humidity_pct` and `location` for each reading. The device does not yet send a firmware version (wifi-config-app issue #32).
